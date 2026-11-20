@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>くれよん 表紙アーカイブ</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Noto+Sans+JP:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: 上部に媒体タブと検索。くれよん各版は「年度×月号」の棚、VC誌は「媒体×月号」の棚。表紙を押すと拡大ビュー */
+:root {
+  --bg: #f1f2ee;
+  --surface: #ffffff;
+  --ink: #1d1e22;
+  --muted: #6b6d72;
+  --line: #d9dad4;
+  --accent: #f5c400;      /* 表紙マストヘッドの黄 */
+  --accent-ink: #1d1e22;
+  --hit: #e8432f;         /* 検索ヒットの赤 */
+  --shade: rgba(20, 21, 24, .86);
+  --font-display: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Noto Sans JP", sans-serif;
+  --font-body: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+  --font-mono: "DM Mono", ui-monospace, "Consolas", monospace;
+  --cover-w: clamp(64px, calc((min(100vw, 1480px) - 160px) / 12 - 10px), 116px);
+  --label-w: 92px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #17181b; --surface: #222327; --ink: #ecebe6; --muted: #9a9ba0; --line: #34353a;
+    --accent: #f5c400; --accent-ink: #17181b; --hit: #ff6a55; --shade: rgba(0,0,0,.9);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #17181b; --surface: #222327; --ink: #ecebe6; --muted: #9a9ba0; --line: #34353a;
+  --accent: #f5c400; --accent-ink: #17181b; --hit: #ff6a55; --shade: rgba(0,0,0,.9);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 14px; line-height: 1.6; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--bg); }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.wrap { max-width: 1480px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+header.top { padding-block: 24px 10px; display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px 24px; }
+.brand { display: flex; align-items: center; gap: 14px; }
+.brand-mark { width: 44px; height: 44px; border-radius: 12px; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-family: var(--font-display); font-weight: 900; font-size: 22px; flex: none; }
+h1 { font-family: var(--font-display); font-weight: 900; font-size: clamp(22px, 3vw, 30px); margin: 0; line-height: 1.2; text-wrap: balance; }
+.sub { color: var(--muted); font-size: 13px; margin: 2px 0 0; }
+.stats { color: var(--muted); font-size: 12px; font-family: var(--font-mono); }
+
+.tabs { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: thin; padding-block: 6px 0; }
+.tab { flex: none; border: 0; background: transparent; padding: 9px 14px 10px; border-radius: 10px 10px 0 0; cursor: pointer; font-family: var(--font-display); font-weight: 700; font-size: 15px; color: var(--muted); position: relative; display: flex; align-items: center; gap: 6px; }
+.tab:hover { color: var(--ink); background: var(--surface); }
+.tab[aria-selected="true"] { color: var(--accent-ink); background: var(--accent); }
+.tab .n { font-family: var(--font-mono); font-size: 11px; font-weight: 500; background: var(--hit); color: #fff; border-radius: 999px; padding: 0 6px; line-height: 18px; }
+.tab-line { height: 3px; background: var(--accent); }
+
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--bg); padding-block: 10px; border-bottom: 1px solid var(--line); }
+.bar-inner { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.search { flex: 1 1 320px; min-width: 0; position: relative; }
+.search input { width: 100%; height: 44px; border-radius: 22px; border: 2px solid var(--line); background: var(--surface); color: var(--ink); padding: 0 44px; font: inherit; font-size: 15px; }
+.search input::-webkit-search-cancel-button { -webkit-appearance: none; display: none; }
+.search input:focus { border-color: var(--accent); outline: none; }
+.search svg { position: absolute; left: 15px; top: 50%; translate: 0 -50%; width: 18px; height: 18px; color: var(--muted); }
+.clear { position: absolute; right: 8px; top: 50%; translate: 0 -50%; width: 30px; height: 30px; border: 0; border-radius: 50%; background: var(--line); cursor: pointer; font-size: 16px; line-height: 1; }
+.result { font-size: 13px; color: var(--muted); min-width: 0; }
+.result b { color: var(--hit); font-family: var(--font-mono); font-size: 15px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 3px 11px; font-size: 12px; cursor: pointer; }
+.chip:hover { border-color: var(--accent); }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.seg button { border: 0; background: transparent; height: 34px; padding: 0 12px; cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 5px; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.seg .n { font-family: var(--font-mono); font-size: 10.5px; background: var(--hit); color: #fff; border-radius: 999px; padding: 0 5px; line-height: 16px; }
+
+main { padding-block: 16px 60px; }
+.note { color: var(--muted); font-size: 12.5px; margin: 0 0 12px; }
+.loading { color: var(--muted); padding: 40px 0; text-align: center; }
+.shelf { overflow-x: auto; padding-bottom: 6px; }
+.grid { display: grid; grid-template-columns: var(--label-w) repeat(12, var(--cover-w)); gap: 14px 10px; width: max-content; margin: 0 auto; }
+.grid.vc { --label-w: 150px; }
+.mhead { font-family: var(--font-mono); font-size: 12px; color: var(--muted); text-align: center; padding-bottom: 2px; }
+.mhead.year { text-align: left; }
+.ylabel { display: flex; flex-direction: column; justify-content: center; border-right: 3px solid var(--accent); padding-right: 10px; min-width: 0; }
+.ylabel .fy { font-family: var(--font-display); font-weight: 900; font-size: 22px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.ylabel .fy small { font-size: 12px; font-weight: 700; }
+.ylabel .range { font-family: var(--font-mono); font-size: 10.5px; color: var(--muted); }
+.ylabel .count { font-size: 11px; color: var(--hit); font-weight: 700; min-height: 1em; }
+.ylabel .mname { font-family: var(--font-display); font-weight: 700; font-size: 13.5px; line-height: 1.3; overflow-wrap: anywhere; }
+.ylabel .marea { font-size: 10.5px; color: var(--muted); line-height: 1.3; }
+.grid .row-hidden { display: none; }
+
+.cell { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.pair { display: flex; gap: 3px; }
+.pair > * { flex: 1 1 0; min-width: 0; }
+.cover { position: relative; display: block; width: 100%; aspect-ratio: 210 / 297; border: 0; padding: 0; background: var(--surface); border-radius: 4px; overflow: hidden; cursor: zoom-in; box-shadow: 0 1px 2px rgba(0,0,0,.12), 0 4px 12px rgba(0,0,0,.06); transition: transform .15s ease, box-shadow .15s ease, opacity .2s ease, filter .2s ease; max-width: 100%; }
+.cover img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.cover:hover { transform: translateY(-3px); box-shadow: 0 2px 4px rgba(0,0,0,.15), 0 10px 24px rgba(0,0,0,.14); }
+.cap { font-family: var(--font-mono); font-size: 11px; color: var(--muted); text-align: center; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.empty { aspect-ratio: 210 / 297; border: 1.5px dashed var(--line); border-radius: 4px; }
+.searching .cover:not(.hit) { opacity: .14; filter: grayscale(1); }
+.searching .cover.hit { outline: 3px solid var(--hit); outline-offset: 2px; }
+
+/* 拡大ビュー */
+.viewer { position: fixed; inset: 0; z-index: 50; background: var(--shade); display: grid; grid-template-columns: minmax(0, 1fr) 340px; color: #f1f0ea; }
+.viewer[hidden] { display: none; }
+.stage { position: relative; overflow: auto; display: grid; place-items: center; padding: max(20px, env(safe-area-inset-top, 0px)) 64px max(20px, env(safe-area-inset-bottom, 0px)) max(64px, env(safe-area-inset-left, 0px)); }
+.stage img { max-height: calc(100vh - 40px); max-width: 100%; height: auto; width: auto; box-shadow: 0 10px 40px rgba(0,0,0,.5); cursor: zoom-in; background: #fff; }
+.stage img.low { image-rendering: auto; filter: blur(.4px); min-height: min(70vh, 900px); }
+.stage.zoomed { place-items: start center; }
+.stage.zoomed img { max-height: none; max-width: none; width: min(1300px, 200%); cursor: zoom-out; }
+.nav { position: absolute; top: 50%; translate: 0 -50%; width: 44px; height: 64px; border: 0; border-radius: 10px; background: rgba(255,255,255,.12); color: #fff; font-size: 26px; cursor: pointer; }
+.nav:hover { background: rgba(255,255,255,.24); }
+.nav.prev { left: max(10px, env(safe-area-inset-left, 0px)); }
+.nav.next { right: 10px; }
+.stage.zoomed .nav { position: fixed; }
+.stage.zoomed .nav.next { right: 350px; }
+.info { background: #1d1e22; overflow-y: auto; padding: max(24px, env(safe-area-inset-top, 0px)) max(22px, env(safe-area-inset-right, 0px)) max(24px, env(safe-area-inset-bottom, 0px)) 22px; display: flex; flex-direction: column; gap: 16px; }
+.info .close { align-self: flex-end; border: 0; background: rgba(255,255,255,.12); color: #fff; border-radius: 50%; width: 38px; height: 38px; font-size: 20px; cursor: pointer; flex: none; }
+.info .medium { font-family: var(--font-display); font-weight: 700; font-size: 14px; color: var(--accent); margin-bottom: -10px; }
+.info .date { font-family: var(--font-display); font-weight: 900; font-size: 30px; line-height: 1.1; }
+.info .date span { display: block; font-family: var(--font-mono); font-weight: 400; font-size: 12px; color: #a9aaa5; margin-top: 4px; overflow-wrap: anywhere; }
+.info h2 { font-family: var(--font-display); font-weight: 700; font-size: 19px; line-height: 1.45; margin: 0; text-wrap: balance; }
+.info h3 { font-size: 11px; letter-spacing: .08em; color: #a9aaa5; margin: 0 0 6px; font-weight: 500; }
+.info ul { margin: 0; padding-left: 1.1em; }
+.info li { margin: 2px 0; }
+.info p { margin: 0; font-size: 13px; color: #d6d5cf; }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.tags button { border: 1px solid rgba(255,255,255,.25); background: transparent; color: #f1f0ea; border-radius: 999px; padding: 2px 10px; font-size: 12px; cursor: pointer; }
+.tags button:hover { background: var(--accent); color: #1d1e22; border-color: var(--accent); }
+mark { background: var(--accent); color: #1d1e22; padding: 0 1px; border-radius: 2px; }
+.hint { font-size: 11px; color: #8d8e8a; margin-top: auto; }
+
+@media (max-width: 860px) {
+  .viewer { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) auto; }
+  .stage { padding: max(12px, env(safe-area-inset-top, 0px)) 12px 12px; }
+  .stage img { max-height: 62vh; }
+  .stage img.low { min-height: 0; }
+  .info { max-height: 38vh; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .info .close { position: fixed; top: max(10px, env(safe-area-inset-top, 0px)); right: max(10px, env(safe-area-inset-right, 0px)); z-index: 2; }
+  .nav { width: 36px; height: 52px; }
+  .stage.zoomed .nav.next { right: 10px; }
+  .grid { --cover-w: 78px; --label-w: 64px; gap: 12px 8px; }
+  .grid.vc { --label-w: 104px; }
+  .ylabel .fy { font-size: 17px; }
+}
+@media (prefers-reduced-motion: reduce) { .cover { transition: none; } .cover:hover { transform: none; } }
+</style>
+
+<header class="top wrap">
+  <div class="brand">
+    <div class="brand-mark" aria-hidden="true">く</div>
+    <div>
+      <h1>くれよん 表紙アーカイブ</h1>
+      <p class="sub" id="sub"></p>
+    </div>
+  </div>
+  <div class="stats" id="stats"></div>
+</header>
+
+<nav class="wrap tabs" id="tabs" role="tablist" aria-label="媒体"></nav>
+<div class="tab-line"></div>
+
+<div class="bar">
+  <div class="wrap bar-inner">
+    <label class="search" for="q">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="表紙の文字・店名・季節などで検索（例：クリスマス、花火、2023）" autocomplete="off" aria-label="表紙を検索">
+      <button class="clear" id="clear" type="button" aria-label="検索をクリア" hidden>×</button>
+    </label>
+    <div class="seg" id="seg"></div>
+    <div class="result" id="result" aria-live="polite"></div>
+  </div>
+  <div class="wrap" style="padding-block: 8px 0;">
+    <div class="chips" id="chips"></div>
+  </div>
+</div>
+
+<main class="wrap">
+  <p class="note" id="note"></p>
+  <div class="shelf"><div class="grid" id="grid"><div class="loading">読み込み中…</div></div></div>
+</main>
+
+<div class="viewer" id="viewer" hidden role="dialog" aria-modal="true" aria-label="表紙の拡大表示">
+  <div class="stage" id="stage">
+    <button class="nav prev" id="prev" type="button" aria-label="前の号">‹</button>
+    <img id="big" alt="">
+    <button class="nav next" id="next" type="button" aria-label="次の号">›</button>
+  </div>
+  <aside class="info" id="info"></aside>
+</div>
+
+<script>
+(() => {
+  const MONTHS = [5,6,7,8,9,10,11,12,1,2,3,4];
+  const QUICK = ['クリスマス','夏','桜','花火','グルメ','子ども','お正月','ハロウィン','住まい','求人'];
+  const $ = s => document.querySelector(s);
+  const grid = $('#grid'), q = $('#q');
+
+  let D = null;              // data/index.json
+  let byId = {}, tab = 'ichinomiya', newestFirst = true, vcYear = null;
+  let hits = null, current = null, navList = [];
+  let vcThumbs = null, vcThumbsLoading = null;
+  const vcLarge = {};
+
+  // 検索用の正規化：全角半角・大小文字・カタカナ/ひらがなを同一視
+  const norm = s => (s || '').normalize('NFKC').toLowerCase()
+    .replace(/[ァ-ヶ]/g, c => String.fromCharCode(c.charCodeAt(0) - 0x60))
+    .replace(/[\s・、。,.!！?？「」『』（）()\[\]【】〜~\-ー―]/g, '');
+  const yr = ym => 2000 + +ym.slice(0,2), mo = ym => +ym.slice(2,4);
+  const fy = ym => mo(ym) >= 5 ? yr(ym) : yr(ym) - 1;
+  const label = ym => `${yr(ym)}年${mo(ym)}月号`;
+  const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const hashOf = c => c.id.replace(/_/g, '-');
+  const tabName = k => D.tabs.find(t => t.key === k).name;
+  const mediaOf = c => c.pub === 'vc' ? D.media.find(m => m.key === c.media) : null;
+
+  function thumbSrc(c) {
+    if (c.pub === 'ichinomiya') return `img/thumb/${c.ym}.jpg`;
+    if (c.pub === 'vc') return vcThumbs ? vcThumbs[c.id] : '';
+    return `img/${c.pub}/thumb/${c.ym}.jpg`;
+  }
+  async function largeSrc(c) {
+    if (c.pub === 'ichinomiya') return `img/large/${c.ym}.jpg`;
+    if (c.pub !== 'vc') return `img/${c.pub}/large/${c.ym}.jpg`;
+    if (!vcLarge[c.media]) vcLarge[c.media] = fetch(`data/vc/${c.media}.json`).then(r => r.json());
+    return (await vcLarge[c.media])[c.id];
+  }
+  function loadVcThumbs() {
+    return vcThumbsLoading ||= fetch('data/vc-thumbs.json').then(r => r.json()).then(j => (vcThumbs = j));
+  }
+
+  fetch('data/index.json').then(r => r.json()).then(data => {
+    D = data;
+    D.covers.forEach(c => {
+      byId[c.id] = c;
+      const m = mediaOf(c);
+      c.blob = norm([c.ym, `${yr(c.ym)}年${mo(c.ym)}月`, `${mo(c.ym)}月号`, `${fy(c.ym)}年度`, c.pub === 'vc' ? '' : tabName(c.pub),
+        m && m.name, m && m.area, c.media_name, c.area, c.vol, c.headline,
+        ...(c.featured||[]), ...(c.topics||[]), c.text, c.visual, ...(c.tags||[])].join(' '));
+    });
+    $('#stats').textContent = `${D.covers.length}号を収録`;
+    $('#chips').innerHTML = QUICK.map(w => `<button class="chip" type="button" data-q="${w}">${w}</button>`).join('');
+    renderTabs();
+    route();
+  });
+
+  function renderTabs() {
+    const counts = {};
+    if (hits) hits.forEach(id => { const p = byId[id].pub; counts[p] = (counts[p] || 0) + 1; });
+    $('#tabs').innerHTML = D.tabs.map(t =>
+      `<button class="tab" role="tab" type="button" data-tab="${t.key}" aria-selected="${t.key === tab}">${esc(t.name)}${hits && counts[t.key] ? `<span class="n">${counts[t.key]}</span>` : ''}</button>`).join('');
+  }
+
+  function setTab(k, push = true) {
+    if (!D.tabs.some(t => t.key === k)) k = 'ichinomiya';
+    tab = k;
+    if (push) { try { history.replaceState(null, '', '#' + k); } catch (e) {} }
+    renderTabs();
+    render();
+  }
+  $('#tabs').addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if (b) setTab(b.dataset.tab); });
+
+  function covers() { return D.covers.filter(c => c.pub === tab); }
+
+  function render() {
+    const list = covers();
+    const isVc = tab === 'vc';
+    $('#sub').textContent = isVc
+      ? 'VC誌は媒体ごとに1行、5月号から4月号まで横に並んでいます。表紙を押すと拡大して見られます。'
+      : '年度ごとに5月号から翌年4月号まで横に並んでいます。表紙を押すと拡大して見られます。';
+    grid.classList.toggle('vc', isVc);
+    const years = [...new Set(list.map(c => fy(c.ym)))].sort();
+    if (isVc && (vcYear == null || !years.includes(vcYear))) vcYear = years.at(-1);
+    renderSeg(years);
+    $('#note').textContent = '';
+    if (isVc && !vcThumbs) {
+      grid.innerHTML = '<div class="loading">VC誌の表紙を読み込み中…</div>';
+      loadVcThumbs().then(() => { if (tab === 'vc') render(); });
+      return;
+    }
+    let h = `<div class="mhead year">${isVc ? '媒体' : '年度'}</div>` + MONTHS.map(m => `<div class="mhead">${m}月号</div>`).join('');
+    const ymOf = (y, m) => String(m >= 5 ? y : y + 1).slice(2) + String(m).padStart(2, '0');
+    const cell = (cs, rowKey) => {
+      if (!cs.length) return `<div class="cell" data-row="${rowKey}"><div class="empty" aria-hidden="true"></div><div class="cap">&nbsp;</div></div>`;
+      const btns = cs.map(c => `<button class="cover" type="button" data-id="${c.id}" aria-label="${esc((mediaOf(c)?.name || tabName(c.pub)) + ' ' + label(c.ym))}"><img src="${thumbSrc(c)}" alt="" loading="lazy"></button>`).join('');
+      return `<div class="cell" data-row="${rowKey}" data-ids="${cs.map(c => c.id).join(' ')}">${cs.length > 1 ? `<div class="pair">${btns}</div>` : btns}<div class="cap">${cs[0].ym}${cs.length > 1 ? ` ×${cs.length}` : ''}</div></div>`;
+    };
+    if (isVc) {
+      const inYear = list.filter(c => fy(c.ym) === vcYear);
+      for (const m of D.media) {
+        const mine = inYear.filter(c => c.media === m.key);
+        if (!mine.length) continue;
+        h += `<div class="ylabel" data-row="${m.key}"><span class="mname">${esc(m.name)}</span>${m.area ? `<span class="marea">${esc(m.area)}</span>` : ''}<span class="count"></span></div>`;
+        for (const mm of MONTHS) h += cell(mine.filter(c => c.ym === ymOf(vcYear, mm)).sort((a,b) => a.n - b.n), m.key);
+      }
+    } else {
+      const ys = newestFirst ? [...years].reverse() : years;
+      for (const y of ys) {
+        h += `<div class="ylabel" data-row="${y}"><span class="fy">${y}<small>年度</small></span><span class="range">${String(y).slice(2)}05–${String(y+1).slice(2)}04</span><span class="count"></span></div>`;
+        for (const mm of MONTHS) h += cell(list.filter(c => c.ym === ymOf(y, mm)), y);
+      }
+      if (tab !== 'ichinomiya') $('#note').textContent = '江南・岩倉・清須・津島・西北の各版は、2026年4月号からの収録です。';
+    }
+    grid.innerHTML = h;
+    applyHits();
+  }
+
+  function renderSeg(years) {
+    const seg = $('#seg');
+    if (tab === 'vc') {
+      const counts = {};
+      if (hits) hits.forEach(id => { const c = byId[id]; if (c.pub === 'vc') counts[fy(c.ym)] = (counts[fy(c.ym)] || 0) + 1; });
+      seg.innerHTML = [...years].reverse().map(y => `<button type="button" data-y="${y}" aria-pressed="${y === vcYear}">${y}年度${hits && counts[y] ? `<span class="n">${counts[y]}</span>` : ''}</button>`).join('');
+    } else {
+      seg.innerHTML = `<button type="button" data-order="new" aria-pressed="${newestFirst}">新しい年度を上に</button><button type="button" data-order="old" aria-pressed="${!newestFirst}">古い年度を上に</button>`;
+    }
+  }
+  $('#seg').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.y) vcYear = +b.dataset.y; else newestFirst = b.dataset.order === 'new';
+    render();
+  });
+
+  function search() {
+    const terms = q.value.trim().split(/\s+/).map(norm).filter(Boolean);
+    $('#clear').hidden = !q.value;
+    hits = terms.length ? new Set(D.covers.filter(c => terms.every(t => c.blob.includes(t))).map(c => c.id)) : null;
+    renderTabs();
+    render();
+  }
+  function applyHits() {
+    grid.classList.toggle('searching', !!hits);
+    if (!hits) { $('#result').textContent = ''; return; }
+    const perRow = {};
+    grid.querySelectorAll('.cover').forEach(b => {
+      const on = hits.has(b.dataset.id);
+      b.classList.toggle('hit', on);
+      if (on) { const r = b.closest('.cell').dataset.row; perRow[r] = (perRow[r] || 0) + 1; }
+    });
+    grid.querySelectorAll('[data-row]').forEach(el => el.classList.toggle('row-hidden', !perRow[el.dataset.row]));
+    grid.querySelectorAll('.ylabel').forEach(el => el.querySelector('.count').textContent = perRow[el.dataset.row] ? `${perRow[el.dataset.row]}件` : '');
+    const here = covers().filter(c => hits.has(c.id)).length;
+    const shown = grid.querySelectorAll('.cover.hit').length;
+    if (hits.size && !shown) {
+      const where = D.tabs.filter(t => D.covers.some(c => c.pub === t.key && hits.has(c.id))).map(t => t.name);
+      $('#note').textContent = here
+        ? 'この年度には見つかりませんでした。上の年度ボタンの赤い数字の年度に該当があります。'
+        : `この媒体には見つかりませんでした。該当があるのは「${where.join('」「')}」です。上のタブで切り替えてください。`;
+    }
+    $('#result').innerHTML = hits.size
+      ? `<b>${hits.size}</b> 号が見つかりました${here !== hits.size ? `（この媒体 ${here}号）` : ''}`
+      : '見つかりませんでした。別の言葉やひらがなで試してください。';
+  }
+
+  let t;
+  q.addEventListener('input', () => { clearTimeout(t); t = setTimeout(search, 150); });
+  $('#clear').addEventListener('click', () => { q.value = ''; search(); q.focus(); });
+  $('#chips').addEventListener('click', e => { const b = e.target.closest('[data-q]'); if (b) { q.value = b.dataset.q; search(); } });
+  grid.addEventListener('click', e => { const b = e.target.closest('.cover'); if (b) open(b.dataset.id); });
+
+  // 拡大ビュー
+  const viewer = $('#viewer'), stage = $('#stage'), big = $('#big');
+  function buildNav(c) {
+    // くれよん各版：その版の全号（検索中はヒットのみ）。VC誌：同じ媒体の号。
+    let l = D.covers.filter(x => x.pub === c.pub && (c.pub !== 'vc' || x.media === c.media));
+    if (hits && hits.has(c.id)) l = l.filter(x => hits.has(x.id));
+    return l.sort((a, b) => (a.ym + a.n).localeCompare(b.ym + b.n));
+  }
+  function hl(s) {
+    const raw = q.value.trim().split(/\s+/).filter(Boolean);
+    let out = esc(s);
+    raw.forEach(w => { const re = new RegExp(esc(w).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'); out = out.replace(re, m => `<mark>${m}</mark>`); });
+    return out;
+  }
+  async function open(id, fromHash) {
+    const c = byId[id]; if (!c) return;
+    current = id;
+    navList = buildNav(c);
+    stage.classList.remove('zoomed');
+    const m = mediaOf(c);
+    const th = thumbSrc(c);
+    big.classList.toggle('low', !!th);
+    big.src = th || '';
+    big.alt = `${m ? m.name : tabName(c.pub)} ${label(c.ym)}の表紙`;
+    largeSrc(c).then(src => { if (current === id && src) { big.src = src; big.classList.remove('low'); } });
+    const sec = (title, body) => body ? `<section><h3>${title}</h3>${body}</section>` : '';
+    const ul = arr => arr && arr.length ? `<ul>${arr.map(x => `<li>${hl(x)}</li>`).join('')}</ul>` : '';
+    const pos = navList.findIndex(x => x.id === id);
+    $('#info').innerHTML = `
+      <button class="close" id="close" type="button" aria-label="閉じる">×</button>
+      <div class="medium">${esc(m ? m.name : tabName(c.pub))}</div>
+      <div class="date">${label(c.ym)}<span>${[c.vol, `${fy(c.ym)}年度`, c.src || `${c.ym}.pdf`].filter(Boolean).map(esc).join(' ・ ')}</span></div>
+      ${c.headline ? `<h2>${hl(c.headline)}</h2>` : ''}
+      ${sec('掲載店・企業', ul(c.featured))}
+      ${sec('特集・トピックス', ul(c.topics))}
+      ${sec('その他の記載', c.text ? `<p>${hl(c.text)}</p>` : '')}
+      ${sec('写真・イラスト', c.visual ? `<p>${hl(c.visual)}</p>` : '')}
+      ${sec('タグ', c.tags && c.tags.length ? `<div class="tags">${c.tags.map(x => `<button type="button" data-q="${esc(x)}">${esc(x)}</button>`).join('')}</div>` : '')}
+      <p class="hint">${pos + 1} / ${navList.length}　画像を押すと拡大／縮小。← → キーで前後の号、Esc で閉じる。</p>`;
+    viewer.hidden = false;
+    document.body.style.overflow = 'hidden';
+    try { history.replaceState(null, '', '#' + hashOf(c)); } catch (e) {}
+    $('#close').focus();
+  }
+  function close() {
+    viewer.hidden = true; document.body.style.overflow = '';
+    try { history.replaceState(null, '', '#' + tab); } catch (e) {}
+    const b = grid.querySelector(`.cover[data-id="${current}"]`); if (b) b.focus();
+    current = null;
+  }
+  function step(d) {
+    let i = navList.findIndex(c => c.id === current);
+    i = i < 0 ? 0 : (i + d + navList.length) % navList.length;
+    const c = navList[i];
+    if (c.pub === 'vc' && fy(c.ym) !== vcYear) { vcYear = fy(c.ym); render(); }
+    open(c.id);
+  }
+  $('#prev').addEventListener('click', e => { e.stopPropagation(); step(-1); });
+  $('#next').addEventListener('click', e => { e.stopPropagation(); step(1); });
+  big.addEventListener('click', e => {
+    const zoom = !stage.classList.contains('zoomed');
+    const rx = e.offsetX / big.clientWidth, ry = e.offsetY / big.clientHeight;
+    stage.classList.toggle('zoomed', zoom);
+    if (zoom) requestAnimationFrame(() => { stage.scrollLeft = rx * big.clientWidth - stage.clientWidth / 2; stage.scrollTop = ry * big.clientHeight - stage.clientHeight / 2; });
+  });
+  stage.addEventListener('click', e => { if (e.target === stage) close(); });
+  $('#info').addEventListener('click', e => {
+    if (e.target.id === 'close') return close();
+    const b = e.target.closest('[data-q]');
+    if (b) { q.value = b.dataset.q; close(); search(); }
+  });
+  document.addEventListener('keydown', e => {
+    if (viewer.hidden) { if (e.key === '/' && document.activeElement !== q) { e.preventDefault(); q.focus(); } return; }
+    if (e.key === 'Escape') close();
+    else if (e.key === 'ArrowLeft') step(-1);
+    else if (e.key === 'ArrowRight') step(1);
+  });
+
+  // #konan のような媒体名、#konan-2605 のような号へのリンク
+  async function route() {
+    const h = location.hash.slice(1).replace(/^c(\d{4})$/, 'ichinomiya-$1'); // 旧リンク #c2512
+    const c =D.covers.find(x => hashOf(x) === h);
+    if (c) {
+      tab = c.pub;
+      if (c.pub === 'vc') { vcYear = fy(c.ym); await loadVcThumbs(); }
+      renderTabs(); render(); open(c.id);
+    } else setTab(h || 'ichinomiya', false);
+  }
+  window.addEventListener('hashchange', () => { if (D && location.hash.slice(1) !== (current ? hashOf(byId[current]) : tab)) route(); });
+})();
+</script>
+
+</body>
+</html>
