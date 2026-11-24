@@ -355,7 +355,7 @@ mark { background: var(--accent); color: #1d1e22; padding: 0 1px; border-radius:
   const RANK_MAX = 50;
   function rankList() {
     return D.covers.filter(c => likeCount(c.id) > 0 &&
-      (rankFilter === 'all' || (rankFilter === 'kureyon' ? c.pub !== 'vc' : c.pub === rankFilter)) &&
+      (rankFilter === 'all' || (rankFilter === 'kureyon' ? c.pub !== 'vc' && tabName(c.pub).startsWith('くれよん') : c.pub === rankFilter)) &&
       (!hits || hits.has(c.id)))
       .sort((a, b) => likeCount(b.id) - likeCount(a.id) || (b.ym + b.n).localeCompare(a.ym + a.n));
   }
@@ -419,6 +419,7 @@ mark { background: var(--accent); color: #1d1e22; padding: 0 1px; border-radius:
         h += `<div class="ylabel" data-row="${y}"><span class="fy">${y}<small>年度</small></span><span class="range">${String(y).slice(2)}05–${String(y+1).slice(2)}04</span><span class="count"></span></div>`;
         for (const mm of MONTHS) h += cell(list.filter(c => c.ym === ymOf(y, mm)), y);
       }
+      if (!list.length) { $('#note').textContent = `${tabName(tab)}の表紙は準備中です。`; grid.innerHTML = ''; $('#seg').innerHTML = ''; applyHits(); return; } // GiFUTO・さるぼぼ（2026-11-24 タブだけ先に追加）
       if (tab !== 'ichinomiya') $('#note').textContent = '江南・岩倉・清須・津島・西北の各版は、2026年4月号からの収録です。';
     }
     grid.innerHTML = h;
