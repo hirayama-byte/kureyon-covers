@@ -86,7 +86,7 @@ main { padding-block: 16px 60px; }
 .loading { color: var(--muted); padding: 40px 0; text-align: center; }
 .shelf { overflow-x: auto; padding-bottom: 6px; }
 .grid { display: grid; grid-template-columns: var(--label-w) repeat(12, var(--cover-w)); gap: 14px 10px; width: max-content; margin: 0 auto; }
-.grid.vc { --label-w: 150px; }
+.grid.vc { --label-w: 150px; --cover-w: clamp(56px, calc((min(100vw, 1480px) - 52px - 150px - 120px) / 12), 116px); } /* 媒体名の欄が広いぶん表紙を小さく（4月号が見切れないように・2026-11-24） */
 .mhead { font-family: var(--font-mono); font-size: 12px; color: var(--muted); text-align: center; padding-bottom: 2px; }
 .mhead.year { text-align: left; }
 .ylabel { display: flex; flex-direction: column; justify-content: center; border-right: 3px solid var(--accent); padding-right: 10px; min-width: 0; }
@@ -149,7 +149,7 @@ mark { background: var(--accent); color: #1d1e22; padding: 0 1px; border-radius:
   .nav { width: 36px; height: 52px; }
   .stage.zoomed .nav.next { right: 10px; }
   .grid { --cover-w: 78px; --label-w: 64px; gap: 12px 8px; }
-  .grid.vc { --label-w: 104px; }
+  .grid.vc { --label-w: 104px; --cover-w: 78px; }
   .ylabel .fy { font-size: 17px; }
 }
 /* いいね♡（2026-11-24） */
