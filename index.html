@@ -152,6 +152,31 @@ mark { background: var(--accent); color: #1d1e22; padding: 0 1px; border-radius:
   .grid.vc { --label-w: 104px; }
   .ylabel .fy { font-size: 17px; }
 }
+/* いいね♡（2026-11-24） */
+.cw { position: relative; min-width: 0; }
+.likeb { position: absolute; right: 3px; bottom: 3px; z-index: 2; display: inline-flex; align-items: center; gap: 2px; height: 20px; padding: 0 6px 0 5px; border: 0; border-radius: 999px; background: rgba(255,255,255,.92); color: #1d1e22; font-family: var(--font-mono); font-size: 10.5px; line-height: 1; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,.25); }
+.likeb svg { width: 12px; height: 12px; flex: none; }
+.likeb .c:empty { display: none; }
+.likeb[aria-pressed="true"] { color: var(--hit); }
+.likeb:hover { background: #fff; }
+.likeb.pop svg, .likebig.pop svg { animation: pop .35s ease; }
+@keyframes pop { 40% { transform: scale(1.45); } }
+.searching .cover:not(.hit) + .likeb { opacity: .25; }
+.likebig { display: inline-flex; align-items: center; gap: 8px; align-self: flex-start; border: 1px solid rgba(255,255,255,.3); background: transparent; color: #f1f0ea; border-radius: 999px; padding: 6px 16px 6px 12px; cursor: pointer; font-size: 14px; font-weight: 700; }
+.likebig svg { width: 22px; height: 22px; }
+.likebig .c { font-family: var(--font-mono); font-size: 16px; }
+.likebig[aria-pressed="true"] { color: #ff6a55; border-color: #ff6a55; }
+.likebig:hover { background: rgba(255,255,255,.08); }
+/* 人気ランキング */
+.rank { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 22px 16px; }
+.ritem { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.ritem .no { font-family: var(--font-display); font-weight: 900; font-size: 20px; line-height: 1; }
+.ritem .no.top { color: var(--accent-ink); background: var(--accent); align-self: flex-start; padding: 3px 9px; border-radius: 8px; }
+.ritem .nm { font-size: 12px; font-weight: 700; line-height: 1.35; overflow-wrap: anywhere; }
+.ritem .ym { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+.rempty { color: var(--muted); padding: 40px 0; text-align: center; line-height: 1.9; }
+.toast { position: fixed; left: 50%; bottom: 24px; translate: -50% 0; z-index: 60; background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 10px; font-size: 13px; box-shadow: 0 6px 20px rgba(0,0,0,.25); }
+@media (prefers-reduced-motion: reduce) { .likeb.pop svg, .likebig.pop svg { animation: none; } }
 @media (prefers-reduced-motion: reduce) { .cover { transition: none; } .cover:hover { transform: none; } }
 </style>
 
@@ -223,6 +248,57 @@ mark { background: var(--accent); color: #1d1e22; padding: 0 1px; border-radius:
   const tabName = k => D.tabs.find(t => t.key === k).name;
   const mediaOf = c => c.pub === 'vc' ? D.media.find(m => m.key === c.media) : null;
 
+  // ---- いいね♡（2026-11-24）: 数は GAS（スプレッドシート「表紙アーカイブ いいね」）。誰でも押せる・1ブラウザ1表紙1回・もう一度で取り消し ----
+  const LIKE_API = 'https://script.google.com/macros/s/AKfycbzm1piR9bdQDtZI1oSA21SLoSjC4CaW5HnV07GsXYZupEl2-CiVGaF468e1M71TjicX/exec';
+  const HEART = on => `<svg viewBox="0 0 24 24" aria-hidden="true" fill="${on ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 8 3.4 4.5 7 4.5c2.1 0 3.6 1.2 5 3 1.4-1.8 2.9-3 5-3 3.6 0 5.6 3.5 4.3 6.8-1.8 4.6-9.3 9.2-9.3 9.2z"/></svg>`;
+  const ls = { get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+               set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
+  let cid = ls.get('kc-cid', '');
+  if (!/^[a-z0-9]{12,40}$/.test(cid)) { cid = Array.from(crypto.getRandomValues(new Uint8Array(12)), b => (b % 36).toString(36)).join('') + Date.now().toString(36); ls.set('kc-cid', cid); }
+  const liked = new Set(ls.get('kc-liked', []));
+  let likeCounts = {}, countsLoaded = false, rankFilter = 'all';
+  const likeCount = id => likeCounts[id] || 0;
+  const likeBtn = c => `<button class="likeb" type="button" data-like="${c.id}" aria-pressed="${liked.has(c.id)}" aria-label="いいね">${HEART(liked.has(c.id))}<span class="c">${likeCount(c.id) || ''}</span></button>`;
+  function paintLikes(id) {
+    document.querySelectorAll(id ? `[data-like="${id}"]` : '[data-like]').forEach(b => {
+      const i = b.dataset.like, on = liked.has(i);
+      b.setAttribute('aria-pressed', on);
+      b.querySelector('svg').outerHTML = HEART(on);
+      b.querySelector('.c').textContent = b.classList.contains('likebig') ? likeCount(i) : (likeCount(i) || '');
+    });
+  }
+  function toast(msg) {
+    document.querySelector('.toast')?.remove();
+    const el = document.createElement('div'); el.className = 'toast'; el.setAttribute('role', 'status'); el.textContent = msg;
+    document.body.appendChild(el); setTimeout(() => el.remove(), 3500);
+  }
+  function loadCounts() {
+    return fetch(LIKE_API + '?a=counts').then(r => r.json()).then(j => {
+      if (!j.ok) throw new Error(j.error);
+      likeCounts = j.counts || {}; countsLoaded = true;
+      paintLikes();
+      if (tab === 'ranking') render();
+    }).catch(() => { countsLoaded = true; if (tab === 'ranking') render(); });
+  }
+  function toggleLike(id, btn) {
+    const on = !liked.has(id);
+    if (on) liked.add(id); else liked.delete(id);
+    likeCounts[id] = Math.max(0, likeCount(id) + (on ? 1 : -1));
+    ls.set('kc-liked', [...liked]);
+    paintLikes(id);
+    if (btn) { btn.classList.remove('pop'); void btn.offsetWidth; if (on) btn.classList.add('pop'); }
+    const u = `${LIKE_API}?a=like&id=${encodeURIComponent(id)}&cid=${cid}&on=${on ? 1 : 0}`;
+    fetch(u).then(r => r.json()).then(j => {
+      if (!j.ok) throw new Error(j.error);
+      likeCounts[id] = j.count; paintLikes(id);
+    }).catch(() => {
+      if (on) liked.delete(id); else liked.add(id);
+      likeCounts[id] = Math.max(0, likeCount(id) + (on ? -1 : 1));
+      ls.set('kc-liked', [...liked]); paintLikes(id);
+      toast('いいねを送れませんでした。通信の状態を確かめて、もう一度押してください。');
+    });
+  }
+
   function thumbSrc(c) {
     if (c.pub === 'ichinomiya') return `img/thumb/${c.ym}.jpg`;
     if (c.pub === 'vc') return vcThumbs ? vcThumbs[c.id] : '';
@@ -240,6 +316,8 @@ mark { background: var(--accent); color: #1d1e22; padding: 0 1px; border-radius:
 
   fetch('data/index.json').then(r => r.json()).then(data => {
     D = data;
+    D.tabs.push({ key: 'ranking', name: '♡ 人気ランキング' });
+    loadCounts();
     D.covers.forEach(c => {
       byId[c.id] = c;
       const m = mediaOf(c);
@@ -271,9 +349,42 @@ mark { background: var(--accent); color: #1d1e22; padding: 0 1px; border-radius:
 
   function covers() { return D.covers.filter(c => c.pub === tab); }
 
+  const coverBtn = c => `<button class="cover" type="button" data-id="${c.id}" aria-label="${esc((mediaOf(c)?.name || tabName(c.pub)) + ' ' + label(c.ym))}"><img src="${thumbSrc(c)}" alt="" loading="lazy"></button>`;
+
+  // 人気ランキング: いいねの多い順（同数は新しい号が上・同数は同じ順位）。上のボタンで媒体を絞る
+  const RANK_MAX = 50;
+  function rankList() {
+    return D.covers.filter(c => likeCount(c.id) > 0 &&
+      (rankFilter === 'all' || (rankFilter === 'kureyon' ? c.pub !== 'vc' : c.pub === rankFilter)) &&
+      (!hits || hits.has(c.id)))
+      .sort((a, b) => likeCount(b.id) - likeCount(a.id) || (b.ym + b.n).localeCompare(a.ym + a.n));
+  }
+  function renderRanking() {
+    $('#sub').textContent = 'いいね♡の多い表紙の順に並んでいます。表紙の右下の♡を押すと、あなたの「いいね」が入ります（もう一度押すと取り消し）。';
+    grid.className = 'rank';
+    const seg = $('#seg');
+    const opts = [['all', 'すべて'], ['kureyon', 'くれよん全版'], ...D.tabs.filter(t => t.key !== 'ranking').map(t => [t.key, t.key === 'vc' ? 'VC誌' : t.name.replace('くれよん', '')])];
+    seg.innerHTML = opts.map(([k, n]) => `<button type="button" data-rank="${k}" aria-pressed="${k === rankFilter}">${esc(n)}</button>`).join('');
+    if (!countsLoaded) { grid.innerHTML = '<div class="rempty">いいねの数を読み込み中…</div>'; return; }
+    const all = rankList(), list = all.slice(0, RANK_MAX);
+    if (list.some(c => c.pub === 'vc') && !vcThumbs) { grid.innerHTML = '<div class="rempty">表紙を読み込み中…</div>'; loadVcThumbs().then(() => { if (tab === 'ranking') render(); }); return; }
+    $('#note').textContent = all.length > RANK_MAX ? `いいねのある ${all.length}号のうち、上位 ${RANK_MAX}号を表示しています。` : '';
+    if (!list.length) { grid.innerHTML = `<div class="rempty">${hits ? '検索に合う表紙には、まだいいねがありません。' : 'まだいいねがありません。<br>各版の表紙の右下にある ♡ を押すと、ここに人気の順で並びます。'}</div>`; applyHits(); return; }
+    let prev = null, no = 0;
+    grid.innerHTML = list.map((c, i) => {
+      if (likeCount(c.id) !== prev) { no = i + 1; prev = likeCount(c.id); }
+      const m = mediaOf(c);
+      return `<div class="ritem"><span class="no${no <= 3 ? ' top' : ''}">${no}位</span><div class="cw">${coverBtn(c)}${likeBtn(c)}</div>` +
+        `<span class="nm">${esc(m ? m.name : tabName(c.pub))}</span><span class="ym">${label(c.ym)}</span></div>`;
+    }).join('');
+    applyHits();
+  }
+
   function render() {
+    if (tab === 'ranking') return renderRanking();
     const list = covers();
     const isVc = tab === 'vc';
+    grid.className = 'grid';
     $('#sub').textContent = isVc
       ? 'VC誌は媒体ごとに1行、5月号から4月号まで横に並んでいます。表紙を押すと拡大して見られます。'
       : '年度ごとに5月号から翌年4月号まで横に並んでいます。表紙を押すと拡大して見られます。';
@@ -291,7 +402,7 @@ mark { background: var(--accent); color: #1d1e22; padding: 0 1px; border-radius:
     const ymOf = (y, m) => String(m >= 5 ? y : y + 1).slice(2) + String(m).padStart(2, '0');
     const cell = (cs, rowKey) => {
       if (!cs.length) return `<div class="cell" data-row="${rowKey}"><div class="empty" aria-hidden="true"></div><div class="cap">&nbsp;</div></div>`;
-      const btns = cs.map(c => `<button class="cover" type="button" data-id="${c.id}" aria-label="${esc((mediaOf(c)?.name || tabName(c.pub)) + ' ' + label(c.ym))}"><img src="${thumbSrc(c)}" alt="" loading="lazy"></button>`).join('');
+      const btns = cs.map(c => `<div class="cw">${coverBtn(c)}${likeBtn(c)}</div>`).join('');
       return `<div class="cell" data-row="${rowKey}" data-ids="${cs.map(c => c.id).join(' ')}">${cs.length > 1 ? `<div class="pair">${btns}</div>` : btns}<div class="cap">${cs[0].ym}${cs.length > 1 ? ` ×${cs.length}` : ''}</div></div>`;
     };
     if (isVc) {
@@ -326,7 +437,8 @@ mark { background: var(--accent); color: #1d1e22; padding: 0 1px; border-radius:
   }
   $('#seg').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
-    if (b.dataset.y) vcYear = +b.dataset.y; else newestFirst = b.dataset.order === 'new';
+    if (b.dataset.rank) rankFilter = b.dataset.rank;
+    else if (b.dataset.y) vcYear = +b.dataset.y; else newestFirst = b.dataset.order === 'new';
     render();
   });
 
@@ -365,11 +477,16 @@ mark { background: var(--accent); color: #1d1e22; padding: 0 1px; border-radius:
   q.addEventListener('input', () => { clearTimeout(t); t = setTimeout(search, 150); });
   $('#clear').addEventListener('click', () => { q.value = ''; search(); q.focus(); });
   $('#chips').addEventListener('click', e => { const b = e.target.closest('[data-q]'); if (b) { q.value = b.dataset.q; search(); } });
-  grid.addEventListener('click', e => { const b = e.target.closest('.cover'); if (b) open(b.dataset.id); });
+  grid.addEventListener('click', e => {
+    const lk = e.target.closest('[data-like]'); if (lk) { e.stopPropagation(); return toggleLike(lk.dataset.like, lk); }
+    const b = e.target.closest('.cover'); if (b) open(b.dataset.id);
+  });
 
   // 拡大ビュー
   const viewer = $('#viewer'), stage = $('#stage'), big = $('#big');
   function buildNav(c) {
+    // 人気ランキングから開いたときは、ランキングの順に前後へ
+    if (tab === 'ranking') { const r = rankList().slice(0, RANK_MAX); if (r.some(x => x.id === c.id)) return r; }
     // くれよん各版：その版の全号（検索中はヒットのみ）。VC誌：同じ媒体の号。
     let l = D.covers.filter(x => x.pub === c.pub && (c.pub !== 'vc' || x.media === c.media));
     if (hits && hits.has(c.id)) l = l.filter(x => hits.has(x.id));
@@ -399,6 +516,7 @@ mark { background: var(--accent); color: #1d1e22; padding: 0 1px; border-radius:
       <button class="close" id="close" type="button" aria-label="閉じる">×</button>
       <div class="medium">${esc(m ? m.name : tabName(c.pub))}</div>
       <div class="date">${label(c.ym)}<span>${[c.vol, `${fy(c.ym)}年度`, c.src || `${c.ym}.pdf`].filter(Boolean).map(esc).join(' ・ ')}</span></div>
+      <button class="likebig" type="button" data-like="${c.id}" aria-pressed="${liked.has(c.id)}" aria-label="いいね">${HEART(liked.has(c.id))}いいね<span class="c">${likeCount(c.id)}</span></button>
       ${c.headline ? `<h2>${hl(c.headline)}</h2>` : ''}
       ${sec('掲載店・企業', ul(c.featured))}
       ${sec('特集・トピックス', ul(c.topics))}
@@ -413,6 +531,7 @@ mark { background: var(--accent); color: #1d1e22; padding: 0 1px; border-radius:
   }
   function close() {
     viewer.hidden = true; document.body.style.overflow = '';
+    if (tab === 'ranking') render(); // 拡大ビューでいいねを変えたら順位を入れ直す
     try { history.replaceState(null, '', '#' + tab); } catch (e) {}
     const b = grid.querySelector(`.cover[data-id="${current}"]`); if (b) b.focus();
     current = null;
@@ -435,6 +554,7 @@ mark { background: var(--accent); color: #1d1e22; padding: 0 1px; border-radius:
   stage.addEventListener('click', e => { if (e.target === stage) close(); });
   $('#info').addEventListener('click', e => {
     if (e.target.id === 'close') return close();
+    const lk = e.target.closest('[data-like]'); if (lk) return toggleLike(lk.dataset.like, lk);
     const b = e.target.closest('[data-q]');
     if (b) { q.value = b.dataset.q; close(); search(); }
   });
