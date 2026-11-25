@@ -338,8 +338,10 @@ mark { background: var(--accent); color: #1d1e22; padding: 0 1px; border-radius:
   // ---- 一覧のズーム（2026-11-25）: − / ＋ で表紙の大きさを段階的に変える。真ん中の％を押すと100%に戻る。大きさはブラウザに覚える ----
   const ZOOMS = [0.5, 0.67, 0.8, 0.9, 1, 1.25, 1.5, 1.75, 2, 2.5, 3];
   // 「幅に合わせる」: 年度×12か月の表が画面の左右いっぱいになる倍率を計算（画面の大きさや版を変えたら計算し直す）
-  let fitMode = ls.get('kc-zoom', 1) === 'fit';
-  let zoom = fitMode ? 1 : (ZOOMS.includes(+ls.get('kc-zoom', 1)) ? +ls.get('kc-zoom', 1) : 1);
+  // 最初は「幅に合わせる」（PC）。スマホ幅は100%（横スクロール）。自分で変えた大きさはブラウザに覚える（2026-11-25 kc-zoom2 に変更＝全員いったん幅に合わせるから）
+  const savedZoom = ls.get('kc-zoom2', innerWidth > 860 ? 'fit' : 1);
+  let fitMode = savedZoom === 'fit';
+  let zoom = fitMode ? 1 : (ZOOMS.includes(+savedZoom) ? +savedZoom : 1);
   function setZoom(z, fit = false) {
     fitMode = fit;
     zoom = Math.round(Math.min(3, Math.max(0.5, z)) * 1000) / 1000;
@@ -348,7 +350,7 @@ mark { background: var(--accent); color: #1d1e22; padding: 0 1px; border-radius:
     $('#zout').disabled = zoom <= ZOOMS[0];
     $('#zin').disabled = zoom >= ZOOMS.at(-1);
     $('#zfit').setAttribute('aria-pressed', fit);
-    ls.set('kc-zoom', fit ? 'fit' : zoom);
+    ls.set('kc-zoom2', fit ? 'fit' : zoom);
   }
   function applyFit() {
     if (tab === 'ranking') return; // ランキングは自動で横いっぱいに並ぶ
