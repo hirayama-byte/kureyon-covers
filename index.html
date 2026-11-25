@@ -81,9 +81,21 @@ h1 { font-family: var(--font-display); font-weight: 900; font-size: clamp(22px, 
 .zoom button { border: 0; background: transparent; height: 34px; min-width: 34px; padding: 0 8px; cursor: pointer; font-size: 16px; line-height: 1; }
 .zoom button:hover:not(:disabled) { background: var(--bg); }
 .zoom button:disabled { opacity: .35; cursor: default; }
+.zoom .zfit { font-size: 12px; border-left: 1px solid var(--line); padding: 0 10px; }
+.zoom .zfit[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
 .zoom .zv { font-family: var(--font-mono); font-size: 12px; min-width: 52px; border-left: 1px solid var(--line); border-right: 1px solid var(--line); }
 .guideb { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border: 0; border-radius: 8px; background: var(--ink); color: var(--bg); font-size: 13px; font-weight: 700; cursor: pointer; text-decoration: none; }
 .guideb:hover { opacity: .85; }
+.top-right { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; justify-content: flex-end; }
+/* 制作ガイド（PDF）の表示（2026-11-25） */
+.gview { position: fixed; inset: 0; z-index: 55; background: var(--shade); display: flex; flex-direction: column; }
+.gview[hidden] { display: none; }
+.gbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: max(10px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px)); background: #1d1e22; color: #f1f0ea; }
+.gbar b { font-family: var(--font-display); font-size: 15px; margin-right: auto; }
+.gbtn { display: inline-flex; align-items: center; height: 34px; padding: 0 14px; border-radius: 8px; background: var(--accent); color: #1d1e22; font-size: 13px; font-weight: 700; text-decoration: none; }
+.gbtn.ghost { background: transparent; color: #f1f0ea; border: 1px solid rgba(255,255,255,.35); }
+.gclose { border: 0; background: rgba(255,255,255,.12); color: #fff; border-radius: 50%; width: 36px; height: 36px; font-size: 20px; cursor: pointer; }
+.gview iframe { flex: 1; width: 100%; border: 0; background: #525659; }
 .guideb svg { width: 16px; height: 16px; }
 .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); }
 .seg button { border: 0; background: transparent; height: 34px; padding: 0 12px; cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 5px; }
@@ -91,6 +103,7 @@ h1 { font-family: var(--font-display); font-weight: 900; font-size: clamp(22px, 
 .seg .n { font-family: var(--font-mono); font-size: 10.5px; background: var(--hit); color: #fff; border-radius: 999px; padding: 0 5px; line-height: 16px; }
 
 main { padding-block: 16px 60px; }
+main.wrap { max-width: none; } /* 拡大したら画面の左右いっぱいまで使う（2026-11-25） */
 .note { color: var(--muted); font-size: 12.5px; margin: 0 0 12px; }
 .loading { color: var(--muted); padding: 40px 0; text-align: center; }
 .shelf { overflow-x: auto; padding-bottom: 6px; }
@@ -197,7 +210,10 @@ mark { background: var(--accent); color: #1d1e22; padding: 0 1px; border-radius:
       <p class="sub" id="sub"></p>
     </div>
   </div>
-  <div class="stats" id="stats"></div>
+  <div class="top-right">
+    <button class="guideb" id="guideOpen" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v17H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 21.5A2.5 2.5 0 0 1 6.5 19H20v3H6.5"/></svg>制作ガイド</button>
+    <div class="stats" id="stats"></div>
+  </div>
 </header>
 
 <nav class="wrap tabs" id="tabs" role="tablist" aria-label="媒体"></nav>
@@ -211,7 +227,7 @@ mark { background: var(--accent); color: #1d1e22; padding: 0 1px; border-radius:
       <button class="clear" id="clear" type="button" aria-label="検索をクリア" hidden>×</button>
     </label>
     <div class="seg" id="seg"></div>
-    <div class="zoom" role="group" aria-label="一覧の大きさ"><button type="button" id="zout" aria-label="小さく" title="小さく">−</button><button type="button" class="zv" id="zv" title="元の大きさに戻す">100%</button><button type="button" id="zin" aria-label="大きく" title="大きく">＋</button></div>
+    <div class="zoom" role="group" aria-label="一覧の大きさ"><button type="button" id="zout" aria-label="小さく" title="小さく">−</button><button type="button" class="zv" id="zv" title="元の大きさに戻す">100%</button><button type="button" id="zin" aria-label="大きく" title="大きく">＋</button><button type="button" class="zfit" id="zfit" aria-pressed="false" title="表を画面の左右いっぱいに合わせる">↔ 幅に合わせる</button></div>
     <div class="result" id="result" aria-live="polite"></div>
   </div>
   <div class="wrap" style="padding-block: 8px 0;">
@@ -223,6 +239,16 @@ mark { background: var(--accent); color: #1d1e22; padding: 0 1px; border-radius:
   <p class="note" id="note"></p>
   <div class="shelf"><div class="grid" id="grid"><div class="loading">読み込み中…</div></div></div>
 </main>
+
+<div class="gview" id="gview" hidden role="dialog" aria-modal="true" aria-label="制作ガイド">
+  <div class="gbar">
+    <b>中広 制作ガイド（2025.12.8 改訂）</b>
+    <a class="gbtn" id="gdl" href="guide/chuko-seisaku-guide-2025-12-08.pdf" download="中広制作ガイド2025.12.8改訂.pdf">PDFをダウンロード</a>
+    <a class="gbtn ghost" href="guide/chuko-seisaku-guide-2025-12-08.pdf" target="_blank" rel="noopener">新しいタブで開く</a>
+    <button class="gclose" id="gclose" type="button" aria-label="閉じる">×</button>
+  </div>
+  <iframe id="gframe" title="中広 制作ガイド"></iframe>
+</div>
 
 <div class="viewer" id="viewer" hidden role="dialog" aria-modal="true" aria-label="表紙の拡大表示">
   <div class="stage" id="stage">
@@ -311,20 +337,48 @@ mark { background: var(--accent); color: #1d1e22; padding: 0 1px; border-radius:
 
   // ---- 一覧のズーム（2026-11-25）: − / ＋ で表紙の大きさを段階的に変える。真ん中の％を押すと100%に戻る。大きさはブラウザに覚える ----
   const ZOOMS = [0.5, 0.67, 0.8, 0.9, 1, 1.25, 1.5, 1.75, 2, 2.5, 3];
-  let zoom = ZOOMS.includes(+ls.get('kc-zoom', 1)) ? +ls.get('kc-zoom', 1) : 1;
-  function setZoom(z) {
-    zoom = z;
-    grid.style.setProperty('--zoom', z);
-    $('#zv').textContent = Math.round(z * 100) + '%';
-    $('#zout').disabled = z <= ZOOMS[0];
-    $('#zin').disabled = z >= ZOOMS.at(-1);
-    ls.set('kc-zoom', z);
+  // 「幅に合わせる」: 年度×12か月の表が画面の左右いっぱいになる倍率を計算（画面の大きさや版を変えたら計算し直す）
+  let fitMode = ls.get('kc-zoom', 1) === 'fit';
+  let zoom = fitMode ? 1 : (ZOOMS.includes(+ls.get('kc-zoom', 1)) ? +ls.get('kc-zoom', 1) : 1);
+  function setZoom(z, fit = false) {
+    fitMode = fit;
+    zoom = Math.round(Math.min(3, Math.max(0.5, z)) * 1000) / 1000;
+    grid.style.setProperty('--zoom', zoom);
+    $('#zv').textContent = Math.round(zoom * 100) + '%';
+    $('#zout').disabled = zoom <= ZOOMS[0];
+    $('#zin').disabled = zoom >= ZOOMS.at(-1);
+    $('#zfit').setAttribute('aria-pressed', fit);
+    ls.set('kc-zoom', fit ? 'fit' : zoom);
   }
-  const stepZoom = d => { const i = ZOOMS.indexOf(zoom); setZoom(ZOOMS[Math.min(ZOOMS.length - 1, Math.max(0, i + d))]); };
+  function applyFit() {
+    if (tab === 'ranking') return; // ランキングは自動で横いっぱいに並ぶ
+    const heads = grid.querySelectorAll('.mhead'); if (heads.length < 13) return;
+    const shelf = grid.parentElement, gap = parseFloat(getComputedStyle(grid).columnGap) || 10;
+    const label = heads[0].getBoundingClientRect().width, col = heads[1].getBoundingClientRect().width / zoom;
+    const z = (shelf.clientWidth - label - gap * 12 - 2) / 12 / col;
+    if (Math.abs(z - zoom) > 0.002) setZoom(z, true); else setZoom(zoom, true);
+  }
+  const stepZoom = d => {
+    const next = d > 0 ? ZOOMS.find(x => x > zoom + 0.001) : [...ZOOMS].reverse().find(x => x < zoom - 0.001);
+    setZoom(next ?? zoom);
+  };
   $('#zout').addEventListener('click', () => stepZoom(-1));
   $('#zin').addEventListener('click', () => stepZoom(1));
   $('#zv').addEventListener('click', () => setZoom(1));
-  setZoom(zoom);
+  $('#zfit').addEventListener('click', () => { fitMode = true; applyFit(); });
+  let rz; window.addEventListener('resize', () => { if (fitMode) { clearTimeout(rz); rz = setTimeout(applyFit, 150); } });
+  setZoom(zoom, fitMode);
+
+  // ---- 制作ガイド（PDF）: 上の「制作ガイド」ボタンで画面いっぱいに表示。ダウンロード・新しいタブも（2026-11-25） ----
+  const GUIDE_PDF = 'guide/chuko-seisaku-guide-2025-12-08.pdf';
+  function openGuide() {
+    const f = $('#gframe'); if (!f.getAttribute('src')) f.src = GUIDE_PDF;
+    $('#gview').hidden = false; document.body.style.overflow = 'hidden'; $('#gclose').focus();
+  }
+  function closeGuide() { $('#gview').hidden = true; document.body.style.overflow = ''; $('#guideOpen').focus(); }
+  $('#guideOpen').addEventListener('click', openGuide);
+  $('#gclose').addEventListener('click', closeGuide);
+  document.addEventListener('keydown', e => { if (!$('#gview').hidden && e.key === 'Escape') { e.stopImmediatePropagation(); closeGuide(); } }, true);
 
   function thumbSrc(c) {
     if (c.pub === 'ichinomiya') return `img/thumb/${c.ym}.jpg`;
@@ -451,6 +505,7 @@ mark { background: var(--accent); color: #1d1e22; padding: 0 1px; border-radius:
     }
     grid.innerHTML = h;
     applyHits();
+    if (fitMode) requestAnimationFrame(applyFit);
   }
 
   function renderSeg(years) {
