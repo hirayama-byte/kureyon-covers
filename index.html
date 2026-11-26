@@ -482,7 +482,9 @@ mark { background: var(--accent); color: #1d1e22; padding: 0 1px; border-radius:
   }
   $('#tabs').addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if (b) setTab(b.dataset.tab); });
 
-  function covers() { return D.covers.filter(c => c.pub === tab); }
+  const vcTab = k => k !== 'vc' && D.media.some(m => m.key === k); // αKuRaSu のように VC誌の1誌を単独タブでも見せる
+  const inTab = (c, k) => c.pub === k || (c.pub === 'vc' && c.media === k && vcTab(k));
+  function covers() { return D.covers.filter(c => inTab(c, tab)); }
 
   const coverBtn = c => `<button class="cover" type="button" data-id="${c.id}" aria-label="${esc((mediaOf(c)?.name || tabName(c.pub)) + ' ' + label(c.ym))}"><img src="${thumbSrc(c)}" alt="" loading="lazy"></button>`;
 
@@ -490,7 +492,7 @@ mark { background: var(--accent); color: #1d1e22; padding: 0 1px; border-radius:
   const RANK_MAX = 50;
   function rankList() {
     return D.covers.filter(c => likeCount(c.id) > 0 &&
-      (rankFilter === 'all' || (rankFilter === 'kureyon' ? c.pub !== 'vc' && tabName(c.pub).startsWith('くれよん') : c.pub === rankFilter)) &&
+      (rankFilter === 'all' || (rankFilter === 'kureyon' ? c.pub !== 'vc' && tabName(c.pub).startsWith('くれよん') : inTab(c, rankFilter))) &&
       (!hits || hits.has(c.id)))
       .sort((a, b) => likeCount(b.id) - likeCount(a.id) || (b.ym + b.n).localeCompare(a.ym + a.n));
   }
@@ -528,16 +530,17 @@ mark { background: var(--accent); color: #1d1e22; padding: 0 1px; border-radius:
     if (isVc && (vcYear == null || !years.includes(vcYear))) vcYear = years.at(-1);
     renderSeg(years);
     $('#note').textContent = '';
-    if (isVc && !vcThumbs) {
+    if ((isVc || vcTab(tab)) && !vcThumbs) {
+      const t0 = tab;
       grid.innerHTML = skeleton(4);
-      loadVcThumbs().then(() => { if (tab === 'vc') render(); });
+      loadVcThumbs().then(() => { if (tab === t0) render(); });
       return;
     }
     let h = `<div class="mhead year">${isVc ? '媒体' : '年度'}</div>` + MONTHS.map(m => `<div class="mhead">${m}月号</div>`).join('');
     const ymOf = (y, m) => String(m >= 5 ? y : y + 1).slice(2) + String(m).padStart(2, '0');
     const cell = (cs, rowKey) => {
       if (!cs.length) return `<div class="cell" data-row="${rowKey}"><div class="empty" aria-hidden="true"></div><div class="cap">&nbsp;</div></div>`;
-      const btns = cs.map(c => `<div class="cw">${coverBtn(c)}${isNewest(c) ? '<span class="newb">最新号</span>' : ''}${likeBtn(c)}</div>`).join('');
+      const btns = cs.map(c => `<div class="cw">${coverBtn(c)}${likeBtn(c)}</div>`).join('');
       return `<div class="cell" data-row="${rowKey}" data-ids="${cs.map(c => c.id).join(' ')}">${cs.length > 1 ? `<div class="pair">${btns}</div>` : btns}<div class="cap">${cs[0].ym}${cs.length > 1 ? ` ×${cs.length}` : ''}</div></div>`;
     };
     if (isVc) {
@@ -602,7 +605,7 @@ mark { background: var(--accent); color: #1d1e22; padding: 0 1px; border-radius:
     const here = covers().filter(c => hits.has(c.id)).length;
     const shown = grid.querySelectorAll('.cover.hit').length;
     if (hits.size && !shown) {
-      const where = D.tabs.filter(t => D.covers.some(c => c.pub === t.key && hits.has(c.id))).map(t => t.name);
+      const where = D.tabs.filter(t => D.covers.some(c => inTab(c, t.key) && hits.has(c.id))).map(t => t.name);
       $('#note').textContent = here
         ? 'この年度には見つかりませんでした。上の年度ボタンの赤い数字の年度に該当があります。'
         : `この媒体には見つかりませんでした。該当があるのは「${where.join('」「')}」です。上のタブで切り替えてください。`;
