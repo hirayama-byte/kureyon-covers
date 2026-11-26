@@ -555,7 +555,7 @@ mark { background: var(--accent); color: #1d1e22; padding: 0 1px; border-radius:
         for (const mm of MONTHS) h += cell(list.filter(c => c.ym === ymOf(y, mm)), y);
       }
       if (!list.length) { $('#note').textContent = ''; grid.className = ''; grid.innerHTML = emptyState(); $('#seg').innerHTML = ''; applyHits(); return; } // GiFUTO・さるぼぼ（2026-11-24 タブだけ先に追加）
-      if (tab !== 'ichinomiya') $('#note').textContent = '江南・岩倉・清須・津島・西北の各版は、2026年4月号からの収録です。';
+      if (['konan','iwakura','kiyosu','tsushima','seihoku'].includes(tab)) $('#note').textContent = '江南・岩倉・清須・津島・西北の各版は、2026年4月号からの収録です。';
     }
     grid.innerHTML = h;
     grid.removeAttribute('aria-busy');
